@@ -13,3 +13,8 @@ CREATE TABLE resources (
   payment   INTEGER   NOT NULL,
   time      INTEGER   NOT NULL
 );
+
+CREATE TABLE resourceIds (
+  id    INTEGER NOT NULL,
+  name  TEXT    NOT NULL
+);

@@ -32,3 +32,9 @@ select *
 from resources
 where name like '%' ||:query || '%' or id like '%' ||:query || '%'
 ;
+
+-- name: GetInaraId :one
+select id
+from resourceIds
+where name like '%' ||:query || '%'
+;

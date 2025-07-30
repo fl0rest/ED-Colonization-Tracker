@@ -19,3 +19,8 @@ type Resource struct {
 	Payment  int64
 	Time     int64
 }
+
+type Resourceid struct {
+	ID   int64
+	Name string
+}

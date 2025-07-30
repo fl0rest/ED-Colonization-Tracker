@@ -60,6 +60,21 @@ func (q *Queries) FindResourceName(ctx context.Context, id interface{}) (string,
 	return name, err
 }
 
+const getInaraId = `-- name: GetInaraId :one
+;
+
+select id
+from resourceIds
+where name like '%' ||?1 || '%'
+`
+
+func (q *Queries) GetInaraId(ctx context.Context, query sql.NullString) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getInaraId, query)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const listEvents = `-- name: ListEvents :many
 select id, raw_text, time
 from events
