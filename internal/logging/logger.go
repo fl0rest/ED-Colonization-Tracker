@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"api-gateway/internal/config"
+	"ed-tracker/internal/config"
 )
 
 type Logger struct {
