@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"api-gateway/internal/logging"
+	"ed-tracker/internal/logging"
 	"net/http"
 )
 
@@ -30,6 +30,12 @@ type responseWriter struct {
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.statusCode = code
 	rw.ResponseWriter.WriteHeader(code)
+}
+
+func (rw *responseWriter) Flush() {
+	if flusher, ok := rw.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
 }
 
 func getRealIP(req *http.Request) string {
