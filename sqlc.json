@@ -1,0 +1,13 @@
+{
+  "version": "2",
+  "sql": [{
+    "schema": "internal/migrations/schema.sql",
+    "queries": "internal/migrations/query.sql",
+    "engine": "sqlite",
+    "gen": {
+      "go": {
+        "out": "internal/db"
+      }
+    }
+  }]
+}
