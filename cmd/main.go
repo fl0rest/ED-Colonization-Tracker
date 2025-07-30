@@ -1,11 +1,12 @@
 package main
 
 import (
-	"api-gateway/internal/config"
-	"api-gateway/internal/handlers"
-	"api-gateway/internal/logging"
-	"api-gateway/internal/middleware"
 	"context"
+	"ed-tracker/internal/config"
+	"ed-tracker/internal/db"
+	"ed-tracker/internal/handlers"
+	"ed-tracker/internal/logging"
+	"ed-tracker/internal/middleware"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,10 +18,21 @@ func main() {
 	log := logging.Log
 	cfg := config.Load()
 	mux := http.NewServeMux()
+	ctx := context.Background()
+
+	factory := &db.DBFactory{Path: cfg.DbFile}
+	queries, sqlDb, err := factory.Connect(ctx)
+	if err != nil {
+		log.Error("Failed to connect to db:", err)
+	}
+	defer sqlDb.Close()
+
+	handlers.Init(queries)
 
 	mux.HandleFunc("/", handlers.HomeHandler)
-	mux.HandleFunc("/api/fetch", handlers.FetchHandler)
+	mux.HandleFunc("GET /api/fetch", handlers.FetchHandler)
 	mux.HandleFunc("POST /api/save", handlers.SaveHandler)
+	mux.HandleFunc("/events", handlers.SseHandler)
 
 	loggedMux := middleware.LoggingMiddleware(mux)
 
