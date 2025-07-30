@@ -14,7 +14,6 @@
   <table>
     <thead>
       <tr>
-        <th>ID</th>
         <th>Name</th>
         <th>Required</th>
         <th>Provided</th>
@@ -26,7 +25,6 @@
     <tbody>
       {{range .}}
         <tr>
-          <td>{{.ID}}</td>
           <td>{{.Name}}</td>
           <td>{{.Required}}</td>
           <td>{{.Provided}}</td>
@@ -47,6 +45,10 @@
       const tbody = document.querySelector("tbody");
       tbody.innerHTML = "";
 
+      if (!resources) {
+        tbody.innerHTML = '<tr><td colspan="7">No resources found.</td></tr>';
+        return;
+      }
       if (resources.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7">No resources found.</td></tr>';
         return;
@@ -55,7 +57,6 @@
       resources.forEach(r => {
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td>${r.ID}</td>
           <td>${r.Name}</td>
           <td>${r.Required}</td>
           <td>${r.Provided}</td>
