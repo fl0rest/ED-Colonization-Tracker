@@ -10,27 +10,25 @@
   </style>
 </head>
 <body>
-  <h1>Resources</h1>
+  <h2>Last Update: {{.LastUpdate}}</h2>
   <table>
     <thead>
       <tr>
         <th>Name</th>
         <th>Required</th>
         <th>Provided</th>
-        <th>Diff</th>
+        <th>Left</th>
         <th>Payment</th>
-        <th>Time</th>
       </tr>
     </thead>
     <tbody>
-      {{range .}}
+      {{range .Resources}}
         <tr>
           <td>{{.Name}}</td>
           <td>{{.Required}}</td>
           <td>{{.Provided}}</td>
           <td>{{.Diff}}</td>
           <td>{{.Payment}}</td>
-          <td>{{.Time}}</td>
         </tr>
       {{else}}
         <tr><td colspan="7">No resources found.</td></tr>
@@ -62,7 +60,6 @@
           <td>${r.Provided}</td>
           <td>${r.Diff}</td>
           <td>${r.Payment}</td>
-          <td>${r.Time}</td>
         `;
         tbody.appendChild(row);
       });
