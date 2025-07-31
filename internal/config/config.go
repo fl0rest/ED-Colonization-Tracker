@@ -26,7 +26,7 @@ func Load() *Config {
 		LogFile:      getStringEnv("LOG_FILE", "./log/app.log"),
 		ErrorLogFile: getStringEnv("ERROR_LOG_FILE", "./log/error.log"),
 		Port:         getStringEnv("PORT", "8000"),
-		DbFile:       getStringEnv("DB_FILE", "appdb.sqlite"),
+		DbFile:       getStringEnv("DB_FILE", "app.db"),
 	}
 }
 
