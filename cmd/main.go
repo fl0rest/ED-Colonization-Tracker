@@ -30,6 +30,21 @@ func main() {
 
 	handlers.Init(queries)
 
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				log.Sys("Running ParseLatestEvents")
+				if err := handlers.ParseLatestEvent(ctx, queries); err != nil {
+					log.Error("ParseLatestEvents Error:", err)
+				}
+			}
+		}
+	}()
+
 	mux.HandleFunc("/", handlers.HomeHandler)
 	mux.HandleFunc("GET /api/fetch", handlers.FetchHandler)
 	mux.HandleFunc("POST /api/save", handlers.SaveHandler)

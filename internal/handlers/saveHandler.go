@@ -30,13 +30,13 @@ func SaveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer r.Body.Close()
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Errorf("Error reading body: %v", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
 
 	if len(body) == 0 {
 		http.Error(w, "Empty Request", http.StatusBadRequest)
@@ -57,7 +57,7 @@ func SaveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	saveArgs := db.AddEventParams{
-		RawText:    string(jon.Raw),
+		RawText:    string(body),
 		Completion: math.Round(jon.Completion*100) / 100,
 		MarketId:   int64(jon.MarketId),
 		Time:       unixTime.Unix(),
