@@ -45,9 +45,9 @@ from resources
 where name =?1
 `
 
-func (q *Queries) FindResourceId(ctx context.Context, name string) (interface{}, error) {
+func (q *Queries) FindResourceId(ctx context.Context, name string) (int64, error) {
 	row := q.db.QueryRowContext(ctx, findResourceId, name)
-	var id interface{}
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
@@ -60,7 +60,7 @@ from resources
 where id =?1
 `
 
-func (q *Queries) FindResourceName(ctx context.Context, id interface{}) (string, error) {
+func (q *Queries) FindResourceName(ctx context.Context, id int64) (string, error) {
 	row := q.db.QueryRowContext(ctx, findResourceName, id)
 	var name string
 	err := row.Scan(&name)
@@ -71,7 +71,7 @@ const getInaraId = `-- name: GetInaraId :one
 ;
 
 select id
-from resourceIds
+from resourceids
 where name like '%' ||?1 || '%'
 `
 
@@ -80,6 +80,26 @@ func (q *Queries) GetInaraId(ctx context.Context, query sql.NullString) (int64, 
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const getLatestEvent = `-- name: GetLatestEvent :one
+select id, raw_text, completion, time, marketid
+from events
+order by time desc
+limit 1
+`
+
+func (q *Queries) GetLatestEvent(ctx context.Context) (Event, error) {
+	row := q.db.QueryRowContext(ctx, getLatestEvent)
+	var i Event
+	err := row.Scan(
+		&i.ID,
+		&i.RawText,
+		&i.Completion,
+		&i.Time,
+		&i.Marketid,
+	)
+	return i, err
 }
 
 const listEvents = `-- name: ListEvents :many
@@ -120,7 +140,7 @@ func (q *Queries) ListEvents(ctx context.Context) ([]Event, error) {
 const listResource = `-- name: ListResource :one
 ;
 
-select id, name, required, provided, diff, payment, time
+select id, eventid, name, required, provided, diff, payment, time
 from resources
 where name like '%' ||?1 || '%' or id like '%' ||?1 || '%'
 `
@@ -130,6 +150,7 @@ func (q *Queries) ListResource(ctx context.Context, query sql.NullString) (Resou
 	var i Resource
 	err := row.Scan(
 		&i.ID,
+		&i.Eventid,
 		&i.Name,
 		&i.Required,
 		&i.Provided,
@@ -141,7 +162,7 @@ func (q *Queries) ListResource(ctx context.Context, query sql.NullString) (Resou
 }
 
 const listResources = `-- name: ListResources :many
-select id, name, required, provided, diff, payment, time
+select id, eventid, name, required, provided, diff, payment, time
 from resources
 order by diff desc
 `
@@ -157,6 +178,7 @@ func (q *Queries) ListResources(ctx context.Context) ([]Resource, error) {
 		var i Resource
 		if err := rows.Scan(
 			&i.ID,
+			&i.Eventid,
 			&i.Name,
 			&i.Required,
 			&i.Provided,
@@ -175,4 +197,43 @@ func (q *Queries) ListResources(ctx context.Context) ([]Resource, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const upsertResource = `-- name: UpsertResource :exec
+;
+
+insert into resources (id, eventId, name, required, provided, diff, payment, time)
+values (?, ?, ?, ?, ?, ?, ?, ?) on conflict(id) do update set
+  eventId = excluded.eventId,
+  required = excluded.required,
+  provided = excluded.provided,
+  diff = excluded.diff,
+  payment = excluded.payment,
+  time = excluded.time
+  where excluded.provided != provided
+`
+
+type UpsertResourceParams struct {
+	ID       int64
+	Eventid  int64
+	Name     string
+	Required int64
+	Provided int64
+	Diff     int64
+	Payment  int64
+	Time     int64
+}
+
+func (q *Queries) UpsertResource(ctx context.Context, arg UpsertResourceParams) error {
+	_, err := q.db.ExecContext(ctx, upsertResource,
+		arg.ID,
+		arg.Eventid,
+		arg.Name,
+		arg.Required,
+		arg.Provided,
+		arg.Diff,
+		arg.Payment,
+		arg.Time,
+	)
+	return err
 }

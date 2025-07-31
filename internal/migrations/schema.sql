@@ -7,7 +7,8 @@ CREATE TABLE events (
 );
 
 CREATE TABLE resources (
-  id        BIGSERIAL PRIMARY KEY,
+  id        INTEGER   PRIMARY KEY,
+  eventId   INTEGER   NOT NULL,
   name      TEXT      NOT NULL,
   required  INTEGER   NOT NULL,
   provided  INTEGER   NOT NULL,

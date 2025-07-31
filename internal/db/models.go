@@ -13,7 +13,8 @@ type Event struct {
 }
 
 type Resource struct {
-	ID       interface{}
+	ID       int64
+	Eventid  int64
 	Name     string
 	Required int64
 	Provided int64
