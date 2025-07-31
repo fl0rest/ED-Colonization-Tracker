@@ -1,27 +1,11 @@
 package handlers
 
 import (
-	"ed-tracker/internal/db"
 	"ed-tracker/internal/logging"
 	"net/http"
-	"text/template"
 
 	_ "modernc.org/sqlite"
 )
-
-var (
-	indexTmpl *template.Template
-	queries   *db.Queries
-)
-
-func Init(q *db.Queries) {
-	queries = q
-	var err error
-	indexTmpl, err = template.ParseFiles("internal/templates/index.tmpl")
-	if err != nil {
-		logging.Log.Errorf("Failed to parse template: %v", err)
-	}
-}
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
