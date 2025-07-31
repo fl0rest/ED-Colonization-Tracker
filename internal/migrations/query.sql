@@ -5,9 +5,9 @@ order by time desc
 ;
 
 -- name: AddEvent :one
-INSERT INTO events (raw_text, time)
-VALUES (:raw_text, :time)
-RETURNING id, raw_text, time;
+INSERT INTO events (raw_text, completion, time, marketId)
+VALUES (:raw_text, :completion, :time, :marketId)
+RETURNING id;
 
 -- name: ListResources :many
 select *

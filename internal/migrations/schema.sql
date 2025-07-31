@@ -1,7 +1,9 @@
 CREATE TABLE events (
-  id        BIGSERIAL PRIMARY KEY,
-  raw_text  TEXT      NOT NULL,
-  time      INTEGER   NOT NULL
+  id          INTEGER   PRIMARY KEY AUTOINCREMENT,
+  raw_text    TEXT      NOT NULL,
+  completion  REAL      NOT NULL,
+  time        INTEGER   NOT NULL,
+  marketId    INTEGER   NOT NULL
 );
 
 CREATE TABLE resources (

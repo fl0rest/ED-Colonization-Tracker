@@ -13,21 +13,28 @@ import (
 const addEvent = `-- name: AddEvent :one
 ;
 
-INSERT INTO events (raw_text, time)
-VALUES (?1, ?2)
-RETURNING id, raw_text, time
+INSERT INTO events (raw_text, completion, time, marketId)
+VALUES (?1, ?2, ?3, ?4)
+RETURNING id
 `
 
 type AddEventParams struct {
-	RawText string
-	Time    int64
+	RawText    string
+	Completion float64
+	Time       int64
+	MarketId   int64
 }
 
-func (q *Queries) AddEvent(ctx context.Context, arg AddEventParams) (Event, error) {
-	row := q.db.QueryRowContext(ctx, addEvent, arg.RawText, arg.Time)
-	var i Event
-	err := row.Scan(&i.ID, &i.RawText, &i.Time)
-	return i, err
+func (q *Queries) AddEvent(ctx context.Context, arg AddEventParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, addEvent,
+		arg.RawText,
+		arg.Completion,
+		arg.Time,
+		arg.MarketId,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 
 const findResourceId = `-- name: FindResourceId :one
@@ -76,7 +83,7 @@ func (q *Queries) GetInaraId(ctx context.Context, query sql.NullString) (int64, 
 }
 
 const listEvents = `-- name: ListEvents :many
-select id, raw_text, time
+select id, raw_text, completion, time, marketid
 from events
 order by time desc
 `
@@ -90,7 +97,13 @@ func (q *Queries) ListEvents(ctx context.Context) ([]Event, error) {
 	var items []Event
 	for rows.Next() {
 		var i Event
-		if err := rows.Scan(&i.ID, &i.RawText, &i.Time); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.RawText,
+			&i.Completion,
+			&i.Time,
+			&i.Marketid,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

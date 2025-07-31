@@ -8,10 +8,10 @@ vars:
 tasks:
   migrate:
     cmds:
-      - sqlite3 appdb.sqlite < internal/migrations/schema.sql
+      - sqlite3 app.db < internal/migrations/schema.sql
 
   migrate:clean:
     cmds:
-      - rm -f appdb.sqlite
-      - sqlite3 appdb.sqlite < internal/migrations/schema.sql
+      - rm -f app.db
+      - sqlite3 app.db < internal/migrations/schema.sql
       

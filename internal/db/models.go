@@ -5,9 +5,11 @@
 package db
 
 type Event struct {
-	ID      interface{}
-	RawText string
-	Time    int64
+	ID         int64
+	RawText    string
+	Completion float64
+	Time       int64
+	Marketid   int64
 }
 
 type Resource struct {
