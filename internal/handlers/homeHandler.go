@@ -11,7 +11,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logging.Log
 
-	resources, err := queries.ListEvents(ctx)
+	resources, err := queries.ListResources(ctx)
 	if err != nil {
 		log.Errorf("Error listing Resources: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

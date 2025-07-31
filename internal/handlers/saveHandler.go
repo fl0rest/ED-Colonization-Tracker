@@ -4,7 +4,6 @@ import (
 	"ed-tracker/internal/db"
 	"ed-tracker/internal/logging"
 	"encoding/json"
-	"fmt"
 	"io"
 	"math"
 	"net/http"
