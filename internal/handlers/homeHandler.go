@@ -11,6 +11,7 @@ import (
 
 type IndexPageData struct {
 	LastUpdate string
+	Progress   float64
 	Resources  []db.Resource
 }
 
@@ -29,6 +30,12 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 
+	event, err := queries.GetLatestEvent(ctx)
+	if err != nil {
+		log.Errorf("Error fetching event: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
 	var lastUpdate string
 	if len(resources) > 0 {
 		lastUpdate = time.Unix(resources[0].Time, 0).Format("2006-01-02 15:04:05")
@@ -37,6 +44,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	data := IndexPageData{
 		LastUpdate: lastUpdate,
 		Resources:  resources,
+		Progress:   event.Completion,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

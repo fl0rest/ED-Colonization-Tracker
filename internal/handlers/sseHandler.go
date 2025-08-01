@@ -1,11 +1,18 @@
 package handlers
 
 import (
+	"ed-tracker/internal/db"
 	"ed-tracker/internal/logging"
 	"encoding/json"
 	"net/http"
 	"time"
 )
+
+type dataPayload struct {
+	Resources   []db.Resource `json:"resources"`
+	Progress    float64       `json:"progress"`
+	LastUpdated string        `json:"lastUpdated"`
+}
 
 func SseHandler(w http.ResponseWriter, r *http.Request) {
 	log := logging.Log
@@ -42,7 +49,20 @@ func SseHandler(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			data, err := json.Marshal(resources)
+			event, err := queries.GetLatestEvent(ctx)
+			if err != nil {
+				log.Error("SSE Query Error", err)
+				continue
+			}
+			lastUpdate := time.Unix(resources[0].Time, 0).Format("2006-01-02 15:04:05")
+
+			payload := dataPayload{
+				Resources:   resources,
+				Progress:    event.Completion,
+				LastUpdated: lastUpdate,
+			}
+
+			data, err := json.Marshal(payload)
 			if err != nil {
 				log.Error("SSE Marshal Error:", err)
 				continue
@@ -53,6 +73,7 @@ func SseHandler(w http.ResponseWriter, r *http.Request) {
 				log.Error("SSE Write Error:", err)
 				continue
 			}
+
 			flusher.Flush()
 		}
 	}
