@@ -54,11 +54,11 @@ func SseHandler(w http.ResponseWriter, r *http.Request) {
 				log.Error("SSE Query Error", err)
 				continue
 			}
-			lastUpdate := time.Unix(resources[0].Time, 0).Format("2006-01-02 15:04:05")
+			lastUpdate := time.Unix(event.Time, 0).Format("2006-01-02 15:04:05")
 
 			payload := dataPayload{
 				Resources:   resources,
-				Progress:    event.Completion,
+				Progress:    float64(event.Completion * 100),
 				LastUpdated: lastUpdate,
 			}
 

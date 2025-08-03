@@ -36,15 +36,10 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 
-	var lastUpdate string
-	if len(resources) > 0 {
-		lastUpdate = time.Unix(resources[0].Time, 0).Format("2006-01-02 15:04:05")
-	}
-
 	data := IndexPageData{
-		LastUpdate: lastUpdate,
+		LastUpdate: time.Unix(event.Time, 0).Format("2006-01-02 15:04:05"),
 		Resources:  resources,
-		Progress:   event.Completion,
+		Progress:   float64(event.Completion * 100),
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
