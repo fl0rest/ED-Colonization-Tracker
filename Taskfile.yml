@@ -15,3 +15,6 @@ tasks:
       - rm -f app.db
       - sqlite3 app.db < internal/migrations/schema.sql
       
+  build:
+    cmds:
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server cmd/main.go
