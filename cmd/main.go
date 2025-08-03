@@ -49,6 +49,7 @@ func main() {
 	mux.HandleFunc("GET /api/fetch", handlers.FetchHandler)
 	mux.HandleFunc("POST /api/save", handlers.SaveHandler)
 	mux.HandleFunc("/events", handlers.SseHandler)
+	mux.HandleFunc("/static/", handlers.StaticHandler)
 
 	loggedMux := middleware.LoggingMiddleware(mux)
 

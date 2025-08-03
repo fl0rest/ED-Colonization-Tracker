@@ -61,7 +61,7 @@
     <tbody>
       {{range .Resources}}
         <tr>
-          <td>{{.Name}} <a href=https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1[]=${.ID}&ps1=&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi14=0&pi5=720&pi12=0&pi7=0&pi8=0&pi13=0 target="_"><img src="https://www.svgrepo.com/show/450458/link.svg" width="20px"></a></td>
+          <td>{{.Name}} <a href=https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1[]=${.ID}&ps1=&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi14=0&pi5=720&pi12=0&pi7=0&pi8=0&pi13=0 target="_"><img src="/static/link.svg" width="20px"></a></td>
           <td>{{.Required}}</td>
           <td>{{.Provided}}</td>
           <td>{{.Diff}}</td>
@@ -97,7 +97,7 @@
       resources.forEach(r => {
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td>${r.Name} <a href=https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1[]=${r.ID}&ps1=&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi14=0&pi5=720&pi12=0&pi7=0&pi8=0&pi13=0 target="_"><img src="https://www.svgrepo.com/show/450458/link.svg" width="20px"></a></td>
+          <td>${r.Name} <a href=https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1[]=${r.ID}&ps1=&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi14=0&pi5=720&pi12=0&pi7=0&pi8=0&pi13=0 target="_"><img src="/static/link.svg" width="20px"></a></td>
           <td>${r.Required}</td>
           <td>${r.Provided}</td>
           <td>${r.Diff}</td>

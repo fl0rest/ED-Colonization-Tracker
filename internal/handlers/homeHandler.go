@@ -4,6 +4,8 @@ import (
 	"ed-tracker/internal/db"
 	"ed-tracker/internal/logging"
 	"net/http"
+	"path/filepath"
+	"strings"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -47,4 +49,22 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("Error rendering template: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
+}
+
+func StaticHandler(w http.ResponseWriter, r *http.Request) {
+	assetPath := strings.TrimPrefix(r.URL.Path, "/static/")
+
+	if strings.Contains(assetPath, "..") {
+		http.NotFound(w, r)
+		return
+	}
+
+	if !strings.Contains(assetPath, ".svg") {
+		http.NotFound(w, r)
+		return
+	}
+
+	fullPath := filepath.Join("static", assetPath)
+
+	http.ServeFile(w, r, fullPath)
 }
