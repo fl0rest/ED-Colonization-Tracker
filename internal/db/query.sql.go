@@ -249,11 +249,11 @@ func (q *Queries) ListResource(ctx context.Context, query sql.NullString) (Resou
 const listResources = `-- name: ListResources :many
 select id, eventid, name, required, provided, diff, payment, time, stationid
 from resources
-where stationId like '%' ||?1 || '%'
+where stationId = ?1
 order by diff desc
 `
 
-func (q *Queries) ListResources(ctx context.Context, query sql.NullString) ([]Resource, error) {
+func (q *Queries) ListResources(ctx context.Context, query int64) ([]Resource, error) {
 	rows, err := q.db.QueryContext(ctx, listResources, query)
 	if err != nil {
 		return nil, err

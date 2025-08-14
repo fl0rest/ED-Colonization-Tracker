@@ -37,7 +37,7 @@ values (?, ?, ?, ?, ?, ?, ?, ?, ?) on conflict(id, stationId) do update set
 -- name: ListResources :many
 select *
 from resources
-where stationId like '%' ||:query || '%'
+where stationId = :query
 order by diff desc
 ;
 
