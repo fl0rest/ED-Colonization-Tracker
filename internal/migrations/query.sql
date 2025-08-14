@@ -24,8 +24,8 @@ limit 1
 ;
 
 -- name: UpsertResource :exec
-insert into resources (id, eventId, name, required, provided, diff, payment, time)
-values (?, ?, ?, ?, ?, ?, ?, ?) on conflict(id) do update set
+insert into resources (id, eventId, name, required, provided, diff, payment, time, stationId)
+values (?, ?, ?, ?, ?, ?, ?, ?, ?) on conflict(id, stationId) do update set
   eventId = excluded.eventId,
   required = excluded.required,
   provided = excluded.provided,
@@ -37,6 +37,7 @@ values (?, ?, ?, ?, ?, ?, ?, ?) on conflict(id) do update set
 -- name: ListResources :many
 select *
 from resources
+where stationId like '%' ||:query || '%'
 order by diff desc
 ;
 

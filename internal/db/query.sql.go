@@ -224,7 +224,7 @@ func (q *Queries) ListEvents(ctx context.Context) ([]Event, error) {
 const listResource = `-- name: ListResource :one
 ;
 
-select id, eventid, name, required, provided, diff, payment, time
+select id, eventid, name, required, provided, diff, payment, time, stationid
 from resources
 where name like '%' ||?1 || '%' or id like '%' ||?1 || '%'
 `
@@ -241,18 +241,20 @@ func (q *Queries) ListResource(ctx context.Context, query sql.NullString) (Resou
 		&i.Diff,
 		&i.Payment,
 		&i.Time,
+		&i.Stationid,
 	)
 	return i, err
 }
 
 const listResources = `-- name: ListResources :many
-select id, eventid, name, required, provided, diff, payment, time
+select id, eventid, name, required, provided, diff, payment, time, stationid
 from resources
+where stationId like '%' ||?1 || '%'
 order by diff desc
 `
 
-func (q *Queries) ListResources(ctx context.Context) ([]Resource, error) {
-	rows, err := q.db.QueryContext(ctx, listResources)
+func (q *Queries) ListResources(ctx context.Context, query sql.NullString) ([]Resource, error) {
+	rows, err := q.db.QueryContext(ctx, listResources, query)
 	if err != nil {
 		return nil, err
 	}
@@ -269,6 +271,7 @@ func (q *Queries) ListResources(ctx context.Context) ([]Resource, error) {
 			&i.Diff,
 			&i.Payment,
 			&i.Time,
+			&i.Stationid,
 		); err != nil {
 			return nil, err
 		}
@@ -286,8 +289,8 @@ func (q *Queries) ListResources(ctx context.Context) ([]Resource, error) {
 const upsertResource = `-- name: UpsertResource :exec
 ;
 
-insert into resources (id, eventId, name, required, provided, diff, payment, time)
-values (?, ?, ?, ?, ?, ?, ?, ?) on conflict(id) do update set
+insert into resources (id, eventId, name, required, provided, diff, payment, time, stationId)
+values (?, ?, ?, ?, ?, ?, ?, ?, ?) on conflict(id, stationId) do update set
   eventId = excluded.eventId,
   required = excluded.required,
   provided = excluded.provided,
@@ -298,14 +301,15 @@ values (?, ?, ?, ?, ?, ?, ?, ?) on conflict(id) do update set
 `
 
 type UpsertResourceParams struct {
-	ID       int64
-	Eventid  int64
-	Name     string
-	Required int64
-	Provided int64
-	Diff     int64
-	Payment  int64
-	Time     int64
+	ID        int64
+	Eventid   int64
+	Name      string
+	Required  int64
+	Provided  int64
+	Diff      int64
+	Payment   int64
+	Time      int64
+	Stationid int64
 }
 
 func (q *Queries) UpsertResource(ctx context.Context, arg UpsertResourceParams) error {
@@ -318,6 +322,7 @@ func (q *Queries) UpsertResource(ctx context.Context, arg UpsertResourceParams) 
 		arg.Diff,
 		arg.Payment,
 		arg.Time,
+		arg.Stationid,
 	)
 	return err
 }

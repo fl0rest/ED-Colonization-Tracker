@@ -31,14 +31,16 @@ CREATE TABLE stations (
 );
 
 CREATE TABLE resources (
-  id        INTEGER   PRIMARY KEY,
+  id        INTEGER   NOT NULL,
   eventId   INTEGER   NOT NULL,
   name      TEXT      NOT NULL,
   required  INTEGER   NOT NULL,
   provided  INTEGER   NOT NULL,
   diff      INTEGER   NOT NULL,
   payment   INTEGER   NOT NULL,
-  time      INTEGER   NOT NULL
+  time      INTEGER   NOT NULL,
+  stationId INTEGER   NOT NULL,
+  PRIMARY KEY (id, stationId)
 );
 
 CREATE TABLE resourceIds (

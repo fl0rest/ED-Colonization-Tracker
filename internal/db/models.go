@@ -30,14 +30,15 @@ type Event struct {
 }
 
 type Resource struct {
-	ID       int64
-	Eventid  int64
-	Name     string
-	Required int64
-	Provided int64
-	Diff     int64
-	Payment  int64
-	Time     int64
+	ID        int64
+	Eventid   int64
+	Name      string
+	Required  int64
+	Provided  int64
+	Diff      int64
+	Payment   int64
+	Time      int64
+	Stationid int64
 }
 
 type Resourceid struct {

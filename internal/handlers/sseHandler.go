@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"ed-tracker/internal/db"
 	"ed-tracker/internal/logging"
 	"encoding/json"
@@ -43,7 +44,10 @@ func SseHandler(w http.ResponseWriter, r *http.Request) {
 			return
 
 		case <-ticker.C:
-			resources, err := queries.ListResources(ctx)
+			resources, err := queries.ListResources(ctx, sql.NullString{
+				String: string(0),
+				Valid:  false,
+			})
 			if err != nil {
 				log.Errorf("SSE Query Error: %v", err)
 				continue

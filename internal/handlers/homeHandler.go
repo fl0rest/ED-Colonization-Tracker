@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"ed-tracker/internal/db"
 	"ed-tracker/internal/logging"
 	"net/http"
@@ -26,7 +27,11 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resources, err := queries.ListResources(ctx)
+	resources, err := queries.ListResources(ctx, sql.NullString{
+		String: string(0),
+		Valid:  false,
+	})
+
 	if err != nil {
 		log.Errorf("Error listing Resources: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
