@@ -19,9 +19,15 @@ CREATE TABLE events (
   time          INTEGER   NOT NULL,
   completion    REAL      NOT NULL,
   marketId      INTEGER   NOT NULL,
-  systemName    TEXT      NOT NULL,
-  stationName   TEXT      NOT NULL,
+  stationId     INTEGER   NOT NULL,
   raw_resources TEXT      NOT NULL
+);
+
+CREATE TABLE stations (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  systemName  TEXT    NOT NULL,
+  stationName TEXT    NOT NULL,
+  marketId    INTEGER NOT NULL
 );
 
 CREATE TABLE resources (

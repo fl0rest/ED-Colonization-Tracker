@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"ed-tracker/internal/db"
 	"ed-tracker/internal/handlers/events"
 	"ed-tracker/internal/logging"
@@ -89,12 +90,29 @@ func SaveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	stationId, err := queries.GetStationId(r.Context(), sql.NullString{
+		String: string(dockEvent.MarketID),
+		Valid:  false,
+	})
+
+	if err != nil {
+		log.Infof("Station Not Found, Adding")
+		stationArguments := db.AddStationParams{
+			Marketid:    int64(dockEvent.MarketID),
+			Systemname:  dockEvent.StarSystem,
+			Stationname: dockEvent.StationName,
+		}
+		if err := queries.AddStation(r.Context(), stationArguments); err != nil {
+			log.Errorf("Failed to add Station: %v", err)
+			http.Error(w, "Save Error", http.StatusInternalServerError)
+		}
+	}
+
 	args := db.AddEventParams{
 		Time:         unixTime.Unix(),
 		Completion:   round2(depotEvent.Completion),
 		MarketId:     int64(depotEvent.MarketID),
-		SystemName:   dockEvent.StarSystem,
-		StationName:  dockEvent.StationName,
+		StationId:    stationId,
 		RawResources: string(depotEvent.Raw),
 	}
 

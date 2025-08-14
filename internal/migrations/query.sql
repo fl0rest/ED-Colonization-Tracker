@@ -13,8 +13,8 @@ INSERT INTO dockEvents (time, marketId, systemName, stationName)
 VALUES (:time, :marketId, :systemName, :stationName);
 
 -- name: AddEvent :exec
-INSERT INTO events (time, completion, marketId, systemName, stationName, raw_resources)
-VALUES (:time, :completion, :marketId, :systemName, :stationName, :raw_resources);
+INSERT INTO events (time, completion, marketId, stationId, raw_resources)
+VALUES (:time, :completion, :marketId, :stationId, :raw_resources);
 
 -- name: GetLatestEvent :one
 select *
@@ -62,4 +62,15 @@ where name like '%' ||:query || '%' or id like '%' ||:query || '%'
 select id
 from resourceids
 where name like '%' ||:query || '%'
+;
+
+-- name: GetStationId :one
+select id
+from stations
+where marketid like '%' ||:query || '%'
+;
+
+-- name: AddStation :exec
+insert into stations (id, systemName, stationName, marketId)
+values (?, ?, ?, ?)
 ;

@@ -25,8 +25,7 @@ type Event struct {
 	Time         int64
 	Completion   float64
 	Marketid     int64
-	Systemname   string
-	Stationname  string
+	Stationid    int64
 	RawResources string
 }
 
@@ -44,4 +43,11 @@ type Resource struct {
 type Resourceid struct {
 	ID   int64
 	Name string
+}
+
+type Station struct {
+	ID          int64
+	Systemname  string
+	Stationname string
+	Marketid    int64
 }

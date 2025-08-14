@@ -57,16 +57,15 @@ func (q *Queries) AddDockEvent(ctx context.Context, arg AddDockEventParams) erro
 }
 
 const addEvent = `-- name: AddEvent :exec
-INSERT INTO events (time, completion, marketId, systemName, stationName, raw_resources)
-VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+INSERT INTO events (time, completion, marketId, stationId, raw_resources)
+VALUES (?1, ?2, ?3, ?4, ?5)
 `
 
 type AddEventParams struct {
 	Time         int64
 	Completion   float64
 	MarketId     int64
-	SystemName   string
-	StationName  string
+	StationId    int64
 	RawResources string
 }
 
@@ -75,9 +74,32 @@ func (q *Queries) AddEvent(ctx context.Context, arg AddEventParams) error {
 		arg.Time,
 		arg.Completion,
 		arg.MarketId,
-		arg.SystemName,
-		arg.StationName,
+		arg.StationId,
 		arg.RawResources,
+	)
+	return err
+}
+
+const addStation = `-- name: AddStation :exec
+;
+
+insert into stations (id, systemName, stationName, marketId)
+values (?, ?, ?, ?)
+`
+
+type AddStationParams struct {
+	ID          int64
+	Systemname  string
+	Stationname string
+	Marketid    int64
+}
+
+func (q *Queries) AddStation(ctx context.Context, arg AddStationParams) error {
+	_, err := q.db.ExecContext(ctx, addStation,
+		arg.ID,
+		arg.Systemname,
+		arg.Stationname,
+		arg.Marketid,
 	)
 	return err
 }
@@ -128,7 +150,7 @@ func (q *Queries) GetInaraId(ctx context.Context, query sql.NullString) (int64, 
 }
 
 const getLatestEvent = `-- name: GetLatestEvent :one
-select id, time, completion, marketid, systemname, stationname, raw_resources
+select id, time, completion, marketid, stationid, raw_resources
 from events
 order by time desc
 limit 1
@@ -142,15 +164,29 @@ func (q *Queries) GetLatestEvent(ctx context.Context) (Event, error) {
 		&i.Time,
 		&i.Completion,
 		&i.Marketid,
-		&i.Systemname,
-		&i.Stationname,
+		&i.Stationid,
 		&i.RawResources,
 	)
 	return i, err
 }
 
+const getStationId = `-- name: GetStationId :one
+;
+
+select id
+from stations
+where marketid like '%' ||?1 || '%'
+`
+
+func (q *Queries) GetStationId(ctx context.Context, query sql.NullString) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getStationId, query)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const listEvents = `-- name: ListEvents :many
-select id, time, completion, marketid, systemname, stationname, raw_resources
+select id, time, completion, marketid, stationid, raw_resources
 from events
 order by time desc
 `
@@ -169,8 +205,7 @@ func (q *Queries) ListEvents(ctx context.Context) ([]Event, error) {
 			&i.Time,
 			&i.Completion,
 			&i.Marketid,
-			&i.Systemname,
-			&i.Stationname,
+			&i.Stationid,
 			&i.RawResources,
 		); err != nil {
 			return nil, err
