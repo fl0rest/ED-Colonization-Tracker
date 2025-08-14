@@ -16,10 +16,10 @@ type Resource struct {
 	Payment        int    `json:"Payment"`
 }
 
-type ParsedEvent struct {
-	Timestamp int        `json:"time"`
-	Resources []Resource `json:"ResourcesRequired"`
-}
+// type ParsedEvent struct {
+// 	Timestamp int        `json:"time"`
+// 	Resources []Resource `json:"ResourcesRequired"`
+// }
 
 func ParseLatestEvent(ctx context.Context, q *db.Queries) error {
 	log := logging.Log
@@ -30,13 +30,13 @@ func ParseLatestEvent(ctx context.Context, q *db.Queries) error {
 		return err
 	}
 
-	var event ParsedEvent
-	if err := json.Unmarshal([]byte(eventRaw.RawText), &event); err != nil {
+	var event []Resource
+	if err := json.Unmarshal([]byte(eventRaw.RawResources), &event); err != nil {
 		log.Errorf("JSON Error: %v", err)
 		return err
 	}
 
-	for _, resource := range event.Resources {
+	for _, resource := range event {
 		id, err := GetResourceId(ctx, resource.NameLocalised)
 		if err != nil || id == 0 {
 			log.Warnf("Resource ID not found for %s: %v, skipping", resource.NameLocalised, err)

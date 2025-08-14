@@ -4,10 +4,17 @@ from events
 order by time desc
 ;
 
--- name: AddEvent :one
-INSERT INTO events (raw_text, completion, time, marketId)
-VALUES (:raw_text, :completion, :time, :marketId)
-RETURNING id;
+-- name: AddDepotEvent :exec
+INSERT INTO depotEvents (completion, time, marketId, raw_text)
+VALUES (:completion, :time, :marketId, :raw_text);
+
+-- name: AddDockEvent :exec
+INSERT INTO dockEvents (time, marketId, systemName, stationName)
+VALUES (:time, :marketId, :systemName, :stationName);
+
+-- name: AddEvent :exec
+INSERT INTO events (time, completion, marketId, systemName, stationName, raw_resources)
+VALUES (:time, :completion, :marketId, :systemName, :stationName, :raw_resources);
 
 -- name: GetLatestEvent :one
 select *

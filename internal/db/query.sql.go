@@ -10,31 +10,76 @@ import (
 	"database/sql"
 )
 
-const addEvent = `-- name: AddEvent :one
+const addDepotEvent = `-- name: AddDepotEvent :exec
 ;
 
-INSERT INTO events (raw_text, completion, time, marketId)
+INSERT INTO depotEvents (completion, time, marketId, raw_text)
 VALUES (?1, ?2, ?3, ?4)
-RETURNING id
 `
 
-type AddEventParams struct {
-	RawText    string
+type AddDepotEventParams struct {
 	Completion float64
 	Time       int64
 	MarketId   int64
+	RawText    string
 }
 
-func (q *Queries) AddEvent(ctx context.Context, arg AddEventParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, addEvent,
-		arg.RawText,
+func (q *Queries) AddDepotEvent(ctx context.Context, arg AddDepotEventParams) error {
+	_, err := q.db.ExecContext(ctx, addDepotEvent,
 		arg.Completion,
 		arg.Time,
 		arg.MarketId,
+		arg.RawText,
 	)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	return err
+}
+
+const addDockEvent = `-- name: AddDockEvent :exec
+INSERT INTO dockEvents (time, marketId, systemName, stationName)
+VALUES (?1, ?2, ?3, ?4)
+`
+
+type AddDockEventParams struct {
+	Time        int64
+	MarketId    string
+	SystemName  string
+	StationName string
+}
+
+func (q *Queries) AddDockEvent(ctx context.Context, arg AddDockEventParams) error {
+	_, err := q.db.ExecContext(ctx, addDockEvent,
+		arg.Time,
+		arg.MarketId,
+		arg.SystemName,
+		arg.StationName,
+	)
+	return err
+}
+
+const addEvent = `-- name: AddEvent :exec
+INSERT INTO events (time, completion, marketId, systemName, stationName, raw_resources)
+VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+`
+
+type AddEventParams struct {
+	Time         int64
+	Completion   float64
+	MarketId     int64
+	SystemName   string
+	StationName  string
+	RawResources string
+}
+
+func (q *Queries) AddEvent(ctx context.Context, arg AddEventParams) error {
+	_, err := q.db.ExecContext(ctx, addEvent,
+		arg.Time,
+		arg.Completion,
+		arg.MarketId,
+		arg.SystemName,
+		arg.StationName,
+		arg.RawResources,
+	)
+	return err
 }
 
 const findResourceId = `-- name: FindResourceId :one
@@ -83,7 +128,7 @@ func (q *Queries) GetInaraId(ctx context.Context, query sql.NullString) (int64, 
 }
 
 const getLatestEvent = `-- name: GetLatestEvent :one
-select id, raw_text, completion, time, marketid
+select id, time, completion, marketid, systemname, stationname, raw_resources
 from events
 order by time desc
 limit 1
@@ -94,16 +139,18 @@ func (q *Queries) GetLatestEvent(ctx context.Context) (Event, error) {
 	var i Event
 	err := row.Scan(
 		&i.ID,
-		&i.RawText,
-		&i.Completion,
 		&i.Time,
+		&i.Completion,
 		&i.Marketid,
+		&i.Systemname,
+		&i.Stationname,
+		&i.RawResources,
 	)
 	return i, err
 }
 
 const listEvents = `-- name: ListEvents :many
-select id, raw_text, completion, time, marketid
+select id, time, completion, marketid, systemname, stationname, raw_resources
 from events
 order by time desc
 `
@@ -119,10 +166,12 @@ func (q *Queries) ListEvents(ctx context.Context) ([]Event, error) {
 		var i Event
 		if err := rows.Scan(
 			&i.ID,
-			&i.RawText,
-			&i.Completion,
 			&i.Time,
+			&i.Completion,
 			&i.Marketid,
+			&i.Systemname,
+			&i.Stationname,
+			&i.RawResources,
 		); err != nil {
 			return nil, err
 		}

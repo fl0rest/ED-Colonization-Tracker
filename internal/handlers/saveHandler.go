@@ -2,23 +2,22 @@ package handlers
 
 import (
 	"ed-tracker/internal/db"
+	"ed-tracker/internal/handlers/events"
 	"ed-tracker/internal/logging"
 	"encoding/json"
 	"io"
-	"math"
 	"net/http"
 	"time"
 )
 
-type Event struct {
-	Timestamp  string          `json:"timestamp"`
-	Completion float64         `json:"ConstructionProgress"`
-	Raw        json.RawMessage `json:"ResourcesRequired"`
-	MarketId   int             `json:"MarketID"`
-}
-
 func SaveHandler(w http.ResponseWriter, r *http.Request) {
 	log := logging.Log
+
+	var (
+		dockEvent  *events.DockEvent
+		depotEvent *events.DepotEvent
+		unixTime   time.Time
+	)
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -43,24 +42,71 @@ func SaveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var jon Event
-	if err := json.Unmarshal(body, &jon); err != nil {
-		log.Errorf("JSON Error: %v", err)
+	var rawEvents []json.RawMessage
+	if err := json.Unmarshal(body, &rawEvents); err != nil {
+		log.Errorf("Failed to unmarshal raw events: %v", err)
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	unixTime, err := time.Parse(time.RFC3339, jon.Timestamp)
-	if err != nil {
-		log.Errorf("Error parsing timestamp: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	for _, raw := range rawEvents {
+		var meta events.EventMeta
+		if err := json.Unmarshal(raw, &meta); err != nil {
+			log.Errorf("Failed to read metadata: %v", err)
+			continue
+		}
+
+		unixTime, err = time.Parse(time.RFC3339, meta.Timestamp)
+		if err != nil {
+			log.Errorf("Invalid timestamp: %v", err)
+			continue
+		}
+
+		switch meta.Event {
+		case "Docked":
+			var e events.DockEvent
+			if err := json.Unmarshal(raw, &e); err != nil {
+				log.Errorf("Failed to parse dock event: %v", err)
+				continue
+			}
+			dockEvent = &e
+
+		case "ColonisationConstructionDepot":
+			var e events.DepotEvent
+			if err := json.Unmarshal(raw, &e); err != nil {
+				log.Errorf("Failed to parse depot event: %v", err)
+				continue
+			}
+			depotEvent = &e
+
+		default:
+			log.Infof("Skipping unknown event type: %s", meta.Event)
+		}
+	}
+
+	if dockEvent == nil || depotEvent == nil {
+		http.Error(w, "Invalid event bundle", http.StatusBadRequest)
 		return
 	}
 
-	saveArgs := db.AddEventParams{
-		RawText:    string(body),
-		Completion: math.Round(jon.Completion*100) / 100,
-		MarketId:   int64(jon.MarketId),
-		Time:       unixTime.Unix(),
+	args := db.AddEventParams{
+		Time:         unixTime.Unix(),
+		Completion:   round2(depotEvent.Completion),
+		MarketId:     int64(depotEvent.MarketID),
+		SystemName:   dockEvent.StarSystem,
+		StationName:  dockEvent.StationName,
+		RawResources: string(depotEvent.Raw),
 	}
-	_, err = queries.AddEvent(r.Context(), saveArgs)
+
+	if err := queries.AddEvent(r.Context(), args); err != nil {
+		log.Errorf("Failed to insert event: %w", err)
+		http.Error(w, "Save Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func round2(val float64) float64 {
+	return float64(int(val*100)) / 100
 }

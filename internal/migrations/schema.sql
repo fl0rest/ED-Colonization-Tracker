@@ -1,9 +1,27 @@
-CREATE TABLE events (
+CREATE TABLE depotEvents (
   id          INTEGER   PRIMARY KEY AUTOINCREMENT,
-  raw_text    TEXT      NOT NULL,
   completion  REAL      NOT NULL,
   time        INTEGER   NOT NULL,
-  marketId    INTEGER   NOT NULL
+  marketId    INTEGER   NOT NULL,
+  raw_text    TEXT      NOT NULL
+);
+
+CREATE TABLE dockEvents (
+  id          INTEGER   PRIMARY KEY AUTOINCREMENT,
+  time        INTEGER   NOT NULL,
+  marketId    TEXT      NOT NULL,
+  systemName  TEXT      NOT NULL,
+  stationName TEXT      NOT NULL
+);
+
+CREATE TABLE events (
+  id            INTEGER   PRIMARY KEY AUTOINCREMENT,
+  time          INTEGER   NOT NULL,
+  completion    REAL      NOT NULL,
+  marketId      INTEGER   NOT NULL,
+  systemName    TEXT      NOT NULL,
+  stationName   TEXT      NOT NULL,
+  raw_resources TEXT      NOT NULL
 );
 
 CREATE TABLE resources (

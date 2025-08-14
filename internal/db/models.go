@@ -4,12 +4,30 @@
 
 package db
 
-type Event struct {
+type Depotevent struct {
 	ID         int64
-	RawText    string
 	Completion float64
 	Time       int64
 	Marketid   int64
+	RawText    string
+}
+
+type Dockevent struct {
+	ID          int64
+	Time        int64
+	Marketid    string
+	Systemname  string
+	Stationname string
+}
+
+type Event struct {
+	ID           int64
+	Time         int64
+	Completion   float64
+	Marketid     int64
+	Systemname   string
+	Stationname  string
+	RawResources string
 }
 
 type Resource struct {
