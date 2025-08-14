@@ -46,7 +46,6 @@ func main() {
 	}()
 
 	mux.HandleFunc("/", handlers.HomeHandler)
-	mux.HandleFunc("GET /api/fetch", handlers.FetchHandler)
 	mux.HandleFunc("POST /api/save", handlers.SaveHandler)
 	mux.HandleFunc("/events", handlers.SseHandler)
 	mux.HandleFunc("/static/", handlers.StaticHandler)
